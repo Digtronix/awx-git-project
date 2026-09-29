@@ -1,10 +1,6 @@
 - hosts: all
-  become: yes
 
   tasks:
-    - name: Gather facts
-      ansible.builtin.setup:
-
     - name: Check effective user
       ansible.builtin.command: whoami
       register: whoami_result
@@ -12,3 +8,30 @@
     - name: Display effective user
       ansible.builtin.debug:
         msg: "AWX is running this task as: {{ whoami_result.stdout }}"
+
+    - name: Install Nginx package for Debian-based systems
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install Nginx package for RedHat-based systems
+      ansible.builtin.yum:
+        name: nginx
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable Nginx service for Debian-based systems
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Start and enable Nginx service for RedHat-based systems
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
